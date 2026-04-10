@@ -1,0 +1,28 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #1a1a2e;
+  color: #eee;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+button {
+  width: 100px;
+  height: 75px;
+  transition:
+    background 0.1s,
+    transform 0.1s,
+    box-shadow 0.1s;
+}
+
+button.active {
+  transform: scale(0.95);
+}
