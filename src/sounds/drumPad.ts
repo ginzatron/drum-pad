@@ -14,18 +14,23 @@ interface Beat {
   timeMs?: number;
 }
 
+interface SoundGroup {
+  label: string;
+  execute: () => void;
+}
+
 let beats: Beat[] = [];
 let startTime: number;
 
-const keyMap: Record<string, () => void> = {
-  kick: playKick,
-  snare: playSnare,
-  hiHat: playHiHat,
-  clap: playClap,
+const keyMap: Record<string, SoundGroup> = {
+  k: { label: "kick", execute: playKick },
+  s: { label: "snare", execute: playSnare },
+  h: { label: "hiHat", execute: playHiHat },
+  c: { label: "clap", execute: playClap },
 };
 
-export const GetKeys = (): string[] => {
-  return Object.keys(keyMap);
+export const GetSoundMap = (): Record<string, SoundGroup> => {
+  return keyMap;
 };
 
 export const drumPadHandler = (cmd: IPadCmd) => {
@@ -33,7 +38,7 @@ export const drumPadHandler = (cmd: IPadCmd) => {
 
   if (handler) {
     record({
-      execute: handler,
+      execute: handler.execute,
       animate: () => cmd.animateFunc(),
     });
   }

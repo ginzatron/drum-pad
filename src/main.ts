@@ -1,7 +1,7 @@
 import {
   ctrlHandler,
   drumPadHandler,
-  GetKeys,
+  GetSoundMap,
   type IPadCmd,
 } from "./sounds/drumPad";
 
@@ -31,21 +31,23 @@ const findButton = (key: string) => {
   }, 200);
 };
 
+document.addEventListener("keydown", (e) => handlePadHit(e.key));
+
 const createDrumPads = () => {
   const startBtn = document.createElement("button");
   startBtn.textContent = "Start";
   startBtn.addEventListener("click", () => handleStart());
   app.appendChild(startBtn);
 
-  GetKeys().forEach((k) => {
+  for (const [key, soundGroup] of Object.entries(GetSoundMap())) {
     const button = document.createElement("button");
-    button.textContent = k;
-    button.dataset.key = k;
+    button.textContent = `${soundGroup.label} (${key})`;
+    button.dataset.key = key;
     button.addEventListener("click", (e) => {
-      handlePadHit(k);
+      handlePadHit(key);
     });
     app.appendChild(button);
-  });
+  }
 
   const replayBtn = document.createElement("button");
   replayBtn.textContent = "Replay";
