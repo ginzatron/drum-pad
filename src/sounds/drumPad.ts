@@ -1,3 +1,4 @@
+import { createRecordingMachine } from "../stateMachines/recordingState";
 import { playClap } from "./clap";
 import { playHiHat } from "./hiHat";
 import { playKick } from "./kickDrum";
@@ -21,6 +22,7 @@ interface SoundGroup {
 
 let beats: Beat[] = [];
 let startTime: number;
+const machine = createRecordingMachine();
 
 const keyMap: Record<string, SoundGroup> = {
   k: { label: "kick", execute: playKick },
@@ -35,8 +37,14 @@ export const GetSoundMap = (): Record<string, SoundGroup> => {
 
 export const drumPadHandler = (cmd: IPadCmd) => {
   const handler = keyMap[cmd.key];
+  if (!handler) return;
 
-  if (handler) {
+  const state = machine.getState();
+
+  handler.execute();
+  cmd.animateFunc();
+
+  if (state === "recording") {
     record({
       execute: handler.execute,
       animate: () => cmd.animateFunc(),
@@ -45,8 +53,12 @@ export const drumPadHandler = (cmd: IPadCmd) => {
 };
 
 export const ctrlHandler = (key: string) => {
-  if (key === "replay") replay();
-  else if (key === "start") beats = [];
+  if (key === "replay" && machine.startReplay()) {
+    replay();
+  }
+  if (key === "start" && machine.startRecording()) {
+    beats = [];
+  }
 };
 
 const record = (sound: Beat) => {
@@ -54,9 +66,6 @@ const record = (sound: Beat) => {
 
   sound.timeMs = Date.now() - startTime;
   beats.push(sound);
-
-  sound.execute();
-  sound.animate();
 };
 
 const replay = () => {
@@ -70,4 +79,6 @@ const replay = () => {
       b.timeMs! - (Date.now() - replayStart),
     );
   });
+  machine.stopReplay();
+  console.log(machine.getState());
 };

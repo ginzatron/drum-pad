@@ -1,46 +1,62 @@
-type RecordingState = "idle" | "recording" | "replaying";
+type RecordingState =
+  | "idle"
+  | "recording"
+  | "replaying"
+  | "paused_recording"
+  | "paused_replay";
 type RecordingEvent =
-  | "start"
-  | "replay"
-  | "restart"
-  | "pauseRecording"
-  | "endRecording"
-  | "pauseReplay"
-  | "stopReplay";
+  | "start_recording"
+  | "pause_recording"
+  | "resume_recording"
+  | "restart_recording"
+  | "stop_recording"
+  | "start_replay"
+  | "pause_replay"
+  | "resume_replay"
+  | "restart_replay"
+  | "stop_replay";
 
-interface Transition {
-  from: RecordingState;
-  event: RecordingEvent;
-  to: RecordingState;
-  sideEffect?: () => void;
+let state: RecordingState = "idle";
+
+export function createRecordingMachine() {
+  return {
+    startRecording: () => transition("start_recording"),
+    startReplay: () => transition("start_replay"),
+    stopReplay: () => transition("stop_replay"),
+    pauseRecording: () => transition("pause_recording"),
+    resumeRecording: () => transition("resume_recording"),
+    getState: () => state,
+  };
 }
 
-interface Beat {
-  execute: () => void;
-  animate: () => void;
-  timeMs?: number;
-}
-
-let track: Beat[] = [];
-function resetTrack() {
-  track = [];
-}
-
-export let state: RecordingState = "idle";
-
-const transitionMap: Transition[] = [
-  {
-    from: "idle",
-    event: "start",
-    to: "recording",
-    sideEffect: resetTrack,
+const transitionMap: Record<
+  RecordingState,
+  Partial<Record<RecordingEvent, RecordingState>>
+> = {
+  idle: { start_recording: "recording", start_replay: "replaying" },
+  recording: {
+    stop_recording: "idle",
+    pause_recording: "paused_recording",
+    start_replay: "replaying",
   },
-];
+  replaying: {
+    stop_replay: "idle",
+    pause_replay: "paused_replay",
+  },
+  paused_recording: {
+    resume_recording: "recording",
+    restart_recording: "idle",
+  },
+  paused_replay: { resume_replay: "replaying", restart_replay: "replaying" },
+};
 
-function transition(event: RecordingEvent): void {
-  const t = transitionMap.find((t) => t.from === state && t.event === event);
-  if (!t) return;
+function transition(event: RecordingEvent): boolean {
+  const newState = transitionMap[state][event];
+  if (!newState) return false;
+  state = newState;
+  return true;
+}
 
-  state = t.to;
-  t.sideEffect?.();
+function getState(): RecordingState {
+  return state;
 }
