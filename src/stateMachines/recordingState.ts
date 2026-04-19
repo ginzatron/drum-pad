@@ -16,9 +16,27 @@ type RecordingEvent =
   | "restart_replay"
   | "stop_replay";
 
-let state: RecordingState = "idle";
+interface Beat {
+  execute: () => void;
+  animate: () => void;
+  timeMs?: number;
+}
 
 export function createRecordingMachine() {
+  let state: RecordingState = "idle";
+
+  const context = {
+    beats: [] as Beat[],
+    startTime: undefined as number | undefined,
+  };
+
+  function transition(event: RecordingEvent): boolean {
+    const newState = transitionMap[state][event];
+    if (!newState) return false;
+    state = newState;
+    return true;
+  }
+
   return {
     startRecording: () => transition("start_recording"),
     startReplay: () => transition("start_replay"),
@@ -49,14 +67,3 @@ const transitionMap: Record<
   },
   paused_replay: { resume_replay: "replaying", restart_replay: "replaying" },
 };
-
-function transition(event: RecordingEvent): boolean {
-  const newState = transitionMap[state][event];
-  if (!newState) return false;
-  state = newState;
-  return true;
-}
-
-function getState(): RecordingState {
-  return state;
-}

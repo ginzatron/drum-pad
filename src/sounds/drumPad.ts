@@ -9,19 +9,11 @@ export interface IPadCmd {
   animateFunc: () => void;
 }
 
-interface Beat {
-  execute: () => void;
-  animate: () => void;
-  timeMs?: number;
-}
-
 interface SoundGroup {
   label: string;
   execute: () => void;
 }
 
-let beats: Beat[] = [];
-let startTime: number;
 const machine = createRecordingMachine();
 
 const keyMap: Record<string, SoundGroup> = {
@@ -81,4 +73,5 @@ const replay = () => {
   });
   machine.stopReplay();
   console.log(machine.getState());
+  
 };
