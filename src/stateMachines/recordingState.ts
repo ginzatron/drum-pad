@@ -16,7 +16,7 @@ type RecordingEvent =
   | "restart_replay"
   | "stop_replay";
 
-interface Beat {
+export interface Beat {
   execute: () => void;
   animate: () => void;
   timeMs?: number;
@@ -44,6 +44,7 @@ export function createRecordingMachine() {
     pauseRecording: () => transition("pause_recording"),
     resumeRecording: () => transition("resume_recording"),
     getState: () => state,
+    getContext: () => context,
   };
 }
 

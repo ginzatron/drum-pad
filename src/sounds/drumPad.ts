@@ -1,4 +1,7 @@
-import { createRecordingMachine } from "../stateMachines/recordingState";
+import {
+  createRecordingMachine,
+  type Beat,
+} from "../stateMachines/recordingState";
 import { playClap } from "./clap";
 import { playHiHat } from "./hiHat";
 import { playKick } from "./kickDrum";
@@ -49,29 +52,26 @@ export const ctrlHandler = (key: string) => {
     replay();
   }
   if (key === "start" && machine.startRecording()) {
-    beats = [];
+    machine.getContext().beats = [];
   }
 };
 
 const record = (sound: Beat) => {
-  if (beats.length == 0) startTime = Date.now();
+  if (machine.getContext().beats.length == 0)
+    machine.getContext().startTime = Date.now();
 
-  sound.timeMs = Date.now() - startTime;
-  beats.push(sound);
+  sound.timeMs = Date.now() - machine.getContext().startTime!;
+  machine.getContext().beats.push(sound);
 };
 
 const replay = () => {
   const replayStart = Date.now();
-  beats.forEach((b) => {
-    setTimeout(
-      () => {
-        b.execute();
-        b.animate();
-      },
-      b.timeMs! - (Date.now() - replayStart),
-    );
+  machine.getContext().beats.forEach((b) => {
+    setTimeout(() => {
+      b.execute();
+      b.animate();
+    }, b.timeMs! - (Date.now() - replayStart));
   });
   machine.stopReplay();
   console.log(machine.getState());
-  
 };
